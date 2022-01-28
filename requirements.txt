@@ -1,0 +1,211 @@
+=Requirements=
+
+==Version 0.1a: First Playable Alpha=
+
+===Multiplayer===
+* Create Node server
+** Persist model on server
+** Allow DM and PC connections to server
+** Share model via WebSockets with all clients
+
+Two modes: peer-to-peer and client-server
+
+Peer-to-peer:
+* Simply load the application's URL in your browser. You can now use the app.
+* You may save your current campaign to a text file. This saves the entire state of the app. The app can be restored from a text file.
+* You may start a peer-to-peer server using WebSockets. Other clients can connect to your server. You must still save the campaign locally.
+* You can connect to resource repositories, or use local files.
+
+Server:
+* A server must be running on a machine.
+* Clients can connect to the server at any time. DM and PC passwords can be set.
+* The campaign is continually saved. Optionally, a Time-Machine style backup is available (all events are time stamped).
+* Server can handle uploading of resources, such as map and token graphics.
+
+===UI===
+Elements:
+* Map (back layer)
+* Campaign selector
+* Map selector
+* Impersonated token frame: TokenFrame
+* Selected token frame: TokenFrame
+* Team frames: TokenFrame*
+* Initiative panel
+* Chat window
+* Impersonated token commands
+* DM only: global commands
+* ToolBar
+
+TokenFrame
+* Thumbnail
+* All properties designated ShowInFrame=true
+* Impersonated and Selected token frames take up a certain % of screen real estate. Depending on the number of visible properties, the frame would take more/less space. It is scaled to fit a set screen percentage.
+* Team token frames use scaling logic to fit the entire team display to a given area.
+
+Teams:
+* The DM can define any number of teams.
+** Default teams: PC, enemy
+* Users see frames for their entire team
+
+Token Commands:
+* Each command (such as rollable properties) shows up as a clickable button
+
+Global Commands:
+* aka macros
+* macro language: JavaScript (of course)
+* default macros:
+** damage/heal
+** add to initiative
+
+ToolBar:
+* Contains tools for working with the map.
+* Selector
+** Cursor is an arrow, unless over a token, then it becomes a hand
+** If a token is clicked, the token becomes selected
+** If a square of map is clicked, the square becomes selected
+** If a token or square is clicked, then dragged, user selects an area
+*** Default area: burst (s7 style)
+*** Press c to change to cone, s to change to circle/spread, b = burst, w = wall, l = line (shift to widen/narrow), f = free-form (select all squares and tokens you move the mouse over)
+*** On mouseup, all squares/tokens are selected
+*** Hold shift to add more areas to same selection, alt to subtract areas
+* Drawing Tools
+** Brings up a palette of tools: draw(default), select drawing, draw area, erase
+** Default tool: draws squares in default color. hold shift to draw on grid lines instead (default width: 20% of grid size). hold alt to erase squares, and alt-shift to erase grid lines
+** All drawings of the same color are grouped; they can be selected while in Drawing mode, then moved, deleted, added to, etc. Different groups are never confused with each other
+** Smart color selection: swatch palette cycles through colors. If you open the drawing tools, make a drawing, then go back to selection mode, the next time you come into drawing mode, you'll automatically shift to the next color. You can manually change back
+** By default, drawings are 75% opacity. If they overlap, their opacity will slowly decrease to help stacking.
+** A global slider allows the user to select a base opacity for all drawings, even hide them
+** Erase tool erases all drawings it contacts, regardless of group. Otherwise, same controls as drawing tool
+** Draw Area works like the drawing tool combined with the area selector in Selector mode. Shift works as in selector mode, it does not shift to grid line mode.
+* Vision Blocking
+** Only matters for 2d map mode, naturally.
+** Uses same controls as Drawing Tools
+** Also lets you place light sources, including sun
+** You can place horizontal light blockers (ceilings) for when the sun is active
+** 3d map uses actual lighting; non-lit areas will be black (no need for FoW)
+** Vision Blocking creates invisible 3d walls which block lighting, thus preventing light sources from illuminating the map board and any tokens on the other side. 
+* Movement Blocking
+** Same tools as Vision Blocking
+** Has a button to copy from vision layer
+** Has a button to duplicate vision layer: all changes in either will be synced. Active by default
+
+Movement:
+* When a token is selected, you can move it using either arrow keys or drag/drop.
+* You may select Planned Movement or Free Move mode.
+** In Planned mode, you see the token's new position, the path it has taken, the length of the movement, and the original position. You can press Enter or MouseUp to end and commit the movement, Escape to cancel, or Spacebar to set a waypoint. Lighting does not update.
+** In Free Move mode, the token moves immediately. Lighting is updated for each square moved.
+
+Vision:
+* Vision of a token is expressed as a number between 0 and infinity, where 1.0 = human standard vision.
+* For a viewer with 1.0 vision, light sources taper to 50% brightness at the stated radius, and 0% at double the radius. (Alternative: actual, real-life attentuation)
+* For a viewer with 2.0 vision, half-drop occurs at double the radius. For 0.5 vision, it's half the radius.
+* Light sensitivity isn't the same thing as darkvision. There is a concept of minimum brightness. For normal humans, this is 0. Thus, a 0-brightness area will be pitch black.
+** With a minimum brightness of 0.1, a 0% bright area will appear 10% bright.
+** Darkvision will increase minimum brightness.
+** Infravision will increases minimum brightness of warm creatures and objects only.
+* Vision applies when you are impersonating a token.
+** When you are not, you see everything on the map, in whatever brightness it would appear at 1.0 vision.
+** The DM may exercise the option to force all PCs to continually impersonate a token, thus rendering them unable to see enemies their token cannot see.
+** The DM may also allow PCs to impersonate any token on their team.
+** The DM has the option of allowing "team vision". When a PC is not impersonating a token, he sees the sum of the vision of his team, but no more.
+* Visibility to PCs:
+** If a token is not visible in a PCs current vision paradigm, it is not visible anywhere: not in the map explorer, nor intiative panel, nor in chat windows
+* Vision blocking and walls:
+** For the purposes of tokens and objects, light stops instantly at the VBL
+** However, for terrain, light attenuates over half the VBL's width
+** Thus, you can see walls, but never through them
+** This might be really hard to do, and could cause all sorts of problems
+** A better solution might be to allow one VBL for terran and one for objects/tokens
+
+Fog of War:
+* Stretch goal for beta
+* Sets the minimum brightness of terrain only to 0.5, but only if it has ever been illuminated by the PC team
+* Does not change minimum brightness of tokens, objects, etc
+
+Mouse:
+* Selection mode:
+** Left clicking a token or object selects it
+** Right clicking a token or object brings up a context menu
+** Middle clicking (or cmd-clicking) a token or object impersonates it
+** Exact same interactions when clicking frames
+
+Keyboard:
+* The following global key commands work whenever they are not superceded by a specific mode:
+** WASD: translates the camera in a flat plane above the map board. Camera accelerates and decelerates smoothly and quickly. Max speed is based on camera height--the higher, the faster.
+** RF: Camera height. R moves camera up, F moves it down.
+** QE: Orbit. Q rotates camera around current selection clockwise, E is counter-clockwise.
+** C: open Character Sheet for selected token
+** shift-C: open Character Sheet for impersonated token
+** Enter: start chatting. Disables all global key commands. Enter becomes "send chat message"
+** Escape: if in chat mode, ends chat mode. If in anything but default UI state, backs up one level toward normal. Otherwise, opens Global Menu.
+* The following key commands require a selection:
+** Delete: deletes the token instance (can be undone, also puts in Deleted Tokens bin)
+** Insert: brings up modal to insert a token at square under mouse cursor
+** D: duplicates token. new token will be placed in square under mouse cursor.
+** Shift-D: duplicates token. new token will be places in nearest empty square to original token.
+
+Character Sheet:
+* 
+
+Global Menu:
+* 
+
+Tokens:
+* Tokens are rendered as short horizontal disks with a 2d image on top.
+** Token base color is determined by team. 2d image is slightly smaller than the disk, so when viewed from above, token image is encircled by its team color.
+** Token images need not and should not have team color built in, nor need they be cropped and scaled. Crop/scale can be adjusted in the character sheet or token editor.
+* A text box above the token shows the name of the token. (Similar to WoW)
+* If unit frames are active, a floating UI element above the token shows the following:
+** Unit name
+** All properties that show up in Frame, in brief form
+
+Initiative:
+* The default renderer for Initiative is a narrow strip, horizontal or vertical (user's choice), showing the token graphics and name of everyone in the list. The list repeats infinitely to the right or down. As initiative advances, the strip moves left/up, so that the current token is in the center, highlighted.
+** If the user is impersonating a token, that token shows up highlighted in some way (not the same way as the current one). A text field informs the user how many tokens must go before they do.
+
+
+===Model===
+* Campaign*
+** Map*
+*** TokenInstance* > MappingObject
+*** Layer*
+
+* MappingObject
+** Layer (ref)
+** position:(grid|pixel)
+** x
+** y
+** width
+** height
+** (z)
+** (depth)
+
+All tokens, objects, images, etc are MappingObjects
+Can have any number of layers.
+
+* PropertyList
+** Property*
+
+* Property
+** Name
+** Type
+** DefaultValue
+** Value
+** ShowInFrame
+** Command (if true, this property becomes a command)
+
+* Token
+** PropertyList*
+
+Property types:
+* String, Float, Int, Boolean, etc
+* Range (number with max, min, current amount, current %)
+
+===Fog of War===
+Stretch goal, requires light vision, vision blocking, volume fog
+
+===First Person===
+Stretch goal, requires that maps and tokens be in 3d
+
+===TokenTool===
+When editing a token, you can adjust scale/crop freely. You can store a URL for a token image, including a file:/// url. Alternatively, in server mode, you may upload images to the server. The UI automatically crops tokens to a circle and provides team color.

@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	
+	<title>Mat3d</title>
+	
+	<style type="text/css">
+	html, body { 
+		width: 100%; 
+		height: 100%; 
+		margin: 0; 
+		padding: 0; 
+		font-family: sans-serif;
+	}
+	#stats {
+		position: fixed;
+		left: 0;
+		bottom: 0;
+	}
+	#compass {
+		position: fixed;
+		top: 10px;
+		right: 10px;
+		background: rgb(100,100,255);
+		width: 100px;
+		height: 100px;
+		border-radius: 100px;
+	}
+	#compassNeedle {
+		position: absolute;
+		width: 50px;
+		height: 2px;
+		top: 50px;
+		left: 50px;
+		background: white;
+		-webkit-transform-origin: 0;
+	}
+	#dashboard {
+		font-size: 10px;
+	}
+	#dashboard th {
+		background: rgb(75,75,175);
+		color: white;
+	}
+	#dashboard td {
+		width: 100px;
+		max-width: 100px;
+		overflow: hidden;
+	}
+	</style>
+	
+	<script src="js/three.js"></script>
+	<script src="js/stats.js"></script>
+	<script src="js/FirstPersonControls.js"></script>
+	
+</head>
+<body>
+
+
+
+
+	
+		<div id="compass">
+			<div id="compassNeedle"> </div>
+		</div>
+		
+		<div id="dashboard" style="position: fixed; top: 0; background: white;">
+			<table>
+			<tr>
+				<th>mx</th>
+				<td id="mx"></td>
+				<th>mrx</th>
+				<td id="mrx"></td>
+				<th>x</th>
+				<td id="x"></td>
+				<th>rx</th>
+				<td id="rx"></td>
+			</tr>
+			<tr>
+				
+				<th>my</th>
+				<td id="my"></td>				
+				<th>mry</th>
+				<td id="mry"></td>
+				<th>y</th>
+				<td id="y"></td>
+				<th>ry</th>
+				<td id="ry"></td>
+			</tr>
+			<tr>
+				<th>mz</th>
+				<td id="mz"></td>
+				<th>mrz</th>
+				<td id="mrz"></td>
+				<th>z</th>
+				<td id="z"></td>
+				<th>rz</th>
+				<td id="rz"></td>
+			</tr>
+			</table>
+		</div>
+
+
+
+	<script>
+	
+	var moveSpeed = 100;
+	var rotateSpeed = (2*Math.PI)/360;
+	var acceleration = 20;
+	var rotateAcceleration = (2*Math.PI)/360/3*1000;
+	var friction = 0.1;
+	var controls, momentum;
+	
+	var selectedPoint = null;
+	
+	var container, stats;
+	var camera, scene, renderer, projector;
+
+	var clothGeometry;
+	var sphere;
+	var object, arrow;
+	var LOD, grid;
+	
+	var ground;
+
+	var rotate = false;
+
+	setTimeout(function() {
+		init();
+		animate();
+	},500);
+	
+	setupControls();
+	
+	function setupControls() {
+		
+		window.addEventListener('keydown',function(e) {
+			//console.log('keydown '+e.keyCode);
+			switch(e.keyCode) {
+				case 87: controls.forward = true; break;
+				case 65: controls.left = true; break;
+				case 83: controls.backward = true; break;
+				case 68: controls.right = true; break;
+				case 32: controls.up = true; break;
+				case 67: controls.down = true; break;
+				case 38: controls.pitchUp = true; break;
+				case 39: controls.yawRight = true; break;
+				case 40: controls.pitchDown = true; break;
+				case 37: controls.yawLeft = true; break;
+			}
+		});
+		window.addEventListener('keyup',function(e) {
+			//console.log('keyup '+e.keyCode);
+			switch(e.keyCode) {
+				case 87: controls.forward = false; break;
+				case 65: controls.left = false; break;
+				case 83: controls.backward = false; break;
+				case 68: controls.right = false; break;
+				case 32: controls.up = false; break;
+				case 67: controls.down = false; break;
+				case 38: controls.pitchUp = false; break;
+				case 39: controls.yawRight = false; break;
+				case 40: controls.pitchDown = false; break;
+				case 37: controls.yawLeft = false; break;
+			}
+		});
+		
+		window.addEventListener("mousewheel", MouseWheelHandler, false);  
+		function MouseWheelHandler(e) {
+			e.preventDefault();
+			
+			// cross-browser wheel delta
+			var e = window.event || e; // old IE support
+			//console.log(e);
+			//var delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
+			var delta = e.wheelDelta;
+			//console.log('delta='+delta);
+			
+			/*
+			var z = camera.position.z;
+			z -= (delta*0.5);
+			//document.getElementById('map').style.webkitTransform = 'perspective(500) translateZ('+z+'px
+			camera.position.z = z
+			console.log(camera.position.z);
+			*/
+			
+			if (delta>0) delta=1;
+			if (delta<0) delta=-1;
+					
+			var dy = camera.position.y * 0.1;
+			dy *= -delta;
+			camera.position.y += dy;
+			/*
+			var ry = 1/((camera.position.y-500)/5000) - Math.PI*0.5;
+			if (ry>0) ry = 0;
+			camera.rotation.x = ry;
+			*/
+			if (selectedPoint) camera.lookAt(selectedPoint);
+		};
+		
+		controls = {
+			leftMouse: false,
+			rightMouse: false,
+			forward: false,
+			backward: false,
+			left: false,
+			right: false,
+			pitchUp: false,
+			pitchDown: false,
+			yawLeft: false,
+			yawRight: false,
+			up: false,
+			down: false,
+			movementX: 0,
+			movementY: 0,
+			movementFactor: 10,
+			acceleration: 1 
+		}
+		momentum = {
+			x: 0,
+			y: 0,
+			z: 0,
+			rx: 0,
+			ry: 0,
+			rz: 0
+		}
+		window.addEventListener('mousedown',function(e) {
+			switch(e.button) {
+				//case 0: controls.leftMouse = true; return;
+				case 2: controls.rightMouse = true; return;
+			}
+			
+			if (e.button==0) {
+				var x, y;
+				x = ( e.clientX / window.innerWidth ) * 2 - 1;
+				y = - ( e.clientY / window.innerHeight ) * 2 + 1;
+				
+				var vector = new THREE.Vector3( x, y, 0.5 );
+				projector.unprojectVector( vector, camera );
+				
+				var ray = new THREE.Ray( camera.position, vector.subSelf( camera.position ).normalize() );
+				
+				var intersects = ray.intersectObjects( [ground] );
+				
+				if (intersects.length>0) {
+					camera.lookAt(intersects[0].point);
+					selectedPoint = intersects[0].point;
+				}
+			}
+		});
+		window.addEventListener('mouseup',function(e) {
+			switch(e.button) {
+				case 0: controls.leftMouse = false; return;
+				case 2: controls.rightMouse = false; return;
+			}
+		});
+		window.addEventListener('mousemove',function(e) {
+			controls.movementX += e.webkitMovementX * (camera.position.y/50);
+			controls.movementY += e.webkitMovementY *  (camera.position.y/50);
+		});
+		
+	}
+	
+
+
+	
+	function init() {
+
+		container = document.createElement( 'div' );
+		document.body.appendChild( container );
+
+		// scene
+
+		scene = new THREE.Scene();
+
+		scene.fog = new THREE.Fog( 0x000000, 0, 50000 );
+		scene.fog.color.setHSV( 0.6, 0.2, 1 );
+
+		// camera
+
+		camera = new THREE.PerspectiveCamera( 30, window.innerWidth / window.innerHeight, 1, 100000 );
+		camera.position.y = 500;
+		camera.position.z = 2500;
+		scene.add( camera );
+
+		// lights
+
+		var light, materials;
+
+		scene.add( new THREE.AmbientLight( 0x666666 ) );
+
+		light = new THREE.DirectionalLight( 0xffffff, 1.75 );
+		light.color.setHSV( 0.6, 0.125, 1 );
+		light.position.set( 50, 200, 100 );
+		light.position.multiplyScalar( 1.3 );
+
+		light.castShadow = true;
+		//light.shadowCameraVisible = true;
+
+		light.shadowMapWidth = 2048;
+		light.shadowMapHeight = 2048;
+
+		var d = 300;
+
+		light.shadowCameraLeft = -d;
+		light.shadowCameraRight = d;
+		light.shadowCameraTop = d;
+		light.shadowCameraBottom = -d;
+
+		light.shadowCameraFar = 1000;
+		light.shadowDarkness = 0.5;
+
+		scene.add( light );
+
+		light = new THREE.DirectionalLight( 0xffffff, 0.35 );
+		light.color.setHSV( 0.3, 0.95, 1 );
+		light.position.set( 0, -1, 0 );
+
+		scene.add( light );
+
+		// arrow
+
+		arrow = new THREE.ArrowHelper( new THREE.Vector3( 0, 1, 0 ), new THREE.Vector3( 0, 0, 0 ), 50, 0xff0000 );
+		arrow.position.set( -200, 0, -200 );
+		// scene.add( arrow );
+
+		// ground
+
+		var initColor = new THREE.Color( 0x00ff00 );
+		initColor.setHSV( 0.25, 0.85, 0.5 );
+		var initTexture = THREE.ImageUtils.generateDataTexture( 1, 1, initColor );
+
+		var groundMaterial = new THREE.MeshPhongMaterial( { color: 0xffffff, specular: 0x111111, map: initTexture } );
+
+		var groundTexture = THREE.ImageUtils.loadTexture( "textures/terrain/grasslight-big.jpg", undefined, function() { groundMaterial.map = groundTexture } );
+		groundTexture.wrapS = groundTexture.wrapT = THREE.RepeatWrapping;
+		groundTexture.repeat.set( 100, 100 );
+		groundTexture.anisotropy = 16;
+
+		var mesh = new THREE.Mesh( new THREE.PlaneGeometry( 100000, 100000 ), groundMaterial );
+		mesh.position.y = -5;
+		mesh.rotation.x = - Math.PI / 2;
+		mesh.receiveShadow = true;
+		scene.add( mesh );
+		
+		ground = mesh;
+
+		// poles
+
+		var poleGeo = new THREE.CubeGeometry( 5, 375, 5 );
+		var poleMat = new THREE.MeshPhongMaterial( { color: 0xffffff, specular: 0x111111, shiness: 100 } );
+
+		var mesh = new THREE.Mesh( poleGeo, poleMat );
+		mesh.position.x = -125;
+		mesh.position.y = 192;
+		mesh.receiveShadow = true;
+		mesh.castShadow = true;
+		scene.add( mesh );
+
+		var mesh = new THREE.Mesh( poleGeo, poleMat );
+		mesh.position.x = 125;
+		mesh.position.y = 192;
+		mesh.receiveShadow = true;
+		mesh.castShadow = true;
+		scene.add( mesh );
+
+		var mesh = new THREE.Mesh( new THREE.CubeGeometry( 255, 5, 5 ), poleMat );
+		mesh.position.y = 0 + 750/2;
+		mesh.position.x = 0;
+		mesh.receiveShadow = true;
+		mesh.castShadow = true;
+		scene.add( mesh );
+
+		var gg = new THREE.CubeGeometry( 10, 10, 10 );
+		var mesh = new THREE.Mesh( gg, poleMat );
+		mesh.position.y = 0;
+		mesh.position.x = 125;
+		mesh.receiveShadow = true;
+		mesh.castShadow = true;
+		scene.add( mesh );
+
+		var mesh = new THREE.Mesh( gg, poleMat );
+		mesh.position.y = 0;
+		mesh.position.x = -125;
+		mesh.receiveShadow = true;
+		mesh.castShadow = true;
+		scene.add( mesh );
+		
+		/*********** GRID *************/
+		//initGrid();
+		
+		   LOD = new THREE.LOD();
+		   //var grid;
+		    
+		   grid = createGrid(50,0.8);
+		  // LOD.addLevel(grid);
+		    /*
+		   grid = createGrid(200,0.5);
+		   LOD.addLevel(grid,1000);
+		    
+		   grid = createGrid(800,0.2);
+		   LOD.addLevel(grid,4000);
+		    */
+		   //scene.add(LOD );
+		  //  window.LOD = LOD;
+		 
+		// scene.add(grid);
+		  
+		
+		
+		//createCells();
+
+
+		/*********** RENDER *************/
+		
+		projector = new THREE.Projector();
+		renderer = new THREE.WebGLRenderer( { antialias: true } );
+		renderer.setSize( window.innerWidth, window.innerHeight );
+		if (scene.fog) renderer.setClearColor( scene.fog.color );
+
+		container.appendChild( renderer.domElement );
+
+		renderer.gammaInput = true;
+		renderer.gammaOutput = true;
+		renderer.physicallyBasedShading = true;
+
+		renderer.shadowMapEnabled = true;
+
+		//
+
+		stats = new Stats();
+		container.appendChild( stats.domElement );
+
+		//
+
+		window.addEventListener( 'resize', onWindowResize, false );
+
+		//camera.lookAt( scene.position );
+
+	}
+	
+	function getRandomColor() {
+		var r = Math.floor(Math.random()*255);
+		var g = Math.floor(Math.random()*255);
+		var b = Math.floor(Math.random()*255);
+		
+		var rgb = (r << 16) + (g << 8) + b;
+		return rgb;
+	}
+	
+	function createCells() {
+		var nw = 150;
+		var nh = 150;
+		var w = 50;
+		var h = 50;
+		
+		for( var r = -nw/2; r < nw/2; r++) {
+			for ( var c = -nh/2; c < nh/2; c++) {
+				var col = getRandomColor();		
+				var mat = new THREE.MeshBasicMaterial( { color: getRandomColor() });
+				var geo = new THREE.PlaneGeometry( w, h );
+				var mesh = new THREE.Mesh( geo, mat );
+				
+				mesh.position.y = 0;
+				mesh.rotation.x = -Math.PI/2;
+				mesh.position.x = r * w + w/2;
+				mesh.position.z = c * h + h/2;
+				
+				scene.add(mesh);
+			}
+		}
+		
+		
+	}
+
+	function createGrid(step,opacity) {
+		var size = 50000;
+
+		var geometry = new THREE.Geometry();
+		var material = new THREE.LineBasicMaterial( { color: 0x000000, opacity: opacity } );
+		material.linewidth = 0.1;
+		
+
+		for ( var i = - size; i <= size; i += step ) {
+
+		    geometry.vertices.push( new THREE.Vector3( - size, 0, i ) );
+		    geometry.vertices.push( new THREE.Vector3(   size, 0, i ) );
+
+		    geometry.vertices.push( new THREE.Vector3( i, 0, - size ) );
+		    geometry.vertices.push( new THREE.Vector3( i, 0,   size ) );
+
+		}
+
+		var line = new THREE.Line( geometry, material, THREE.LinePieces );
+		//scene.add( line );
+		return line;
+	}
+
+	//
+
+	function onWindowResize() {
+
+		camera.aspect = window.innerWidth / window.innerHeight;
+		camera.updateProjectionMatrix();
+
+		renderer.setSize( window.innerWidth, window.innerHeight );
+
+	}
+
+	//
+
+	function animate() {
+
+		requestAnimationFrame( animate );
+
+		var time = Date.now();
+
+
+		//simulate(time);
+		render();
+		stats.update();
+
+	}
+
+	function render() {
+
+		var timer = Date.now() * 0.0002;
+
+		//if (fpc&&fpc.update) fpc.update();
+
+		if ( rotate ) {
+
+			camera.position.x = Math.cos( timer ) * 1500;
+			camera.position.z = Math.sin( timer ) * 1500;
+
+		}
+		
+		// controls
+		if (controls) {
+			if (controls.rightMouse) {
+				//console.log('foo');
+				camera.position.x += controls.movementX;
+				camera.position.z += controls.movementY;
+				controls.movementX = 0;
+				controls.movementY = 0;
+			}
+			if (controls.leftMouse) {
+				//console.log('bar');
+			}
+			
+			var dx=0,dy=0,dz=0,drx=0,dry=0,drz=0;
+			if (controls.forward) {
+				// rotation.y = 0 means facing north
+				//dz += -Math.cos(camera.rotation.y) * acceleration;
+				dz += -acceleration;
+			}
+			if (controls.backward) {
+				//dz += Math.cos(camera.rotation.y) * acceleration;
+				dz += acceleration;
+			}
+			if (controls.left) {
+				//dx += Math.sin(camera.rotation.y) * acceleration;
+				dx += -acceleration;
+			}
+			if (controls.right) {
+				//dx += -Math.sin(camera.rotation.y) * acceleration;
+				dx += acceleration;
+			}
+			if (controls.up) {
+				dy += acceleration;
+			}
+			if (controls.down) {
+				dy -= acceleration;
+			}
+			if (controls.yawLeft) {
+				dry += rotateAcceleration; 
+			}
+			if (controls.yawRight) { 
+				dry += -rotateAcceleration; 
+			}
+			if (controls.pitchUp) {
+				drx += Math.cos(camera.rotation.y) * rotateAcceleration;
+				drz += -Math.sin(camera.rotation.y) * rotateAcceleration;
+			}
+			if (controls.pitchDown) { 
+				drx += -Math.cos(camera.rotation.y) * rotateAcceleration;
+				drz += Math.sin(camera.rotation.y) * rotateAcceleration;
+			}
+			
+			
+			momentum.x += dx;
+			momentum.y += dy;
+			momentum.z += dz;
+			
+			momentum.rx += drx;
+			momentum.ry += dry;
+			momentum.rz += drz;
+			
+			/*
+			camera.position.x += momentum.x;
+			camera.position.y += momentum.y;
+			camera.position.z += momentum.z;
+			*/
+			
+			// bounce off ground
+			if (camera.position.y + momentum.y < 50) {
+				camera.position.y = 50;
+				momentum.y = 0;
+			}
+							
+			camera.translateX( momentum.x );
+			camera.translateY( momentum.y );
+			camera.translateZ( momentum.z );
+			
+			camera.rotation.x += momentum.rx;
+			camera.rotation.y += momentum.ry;
+			camera.rotation.z += momentum.rz;
+			
+			
+			momentum.x *= (1-friction);
+			momentum.y *= (1-friction);
+			momentum.z *= (1-friction);
+			
+			momentum.rx *= (1-friction);
+			momentum.ry *= (1-friction);
+			momentum.rz *= (1-friction);
+			
+			if (momentum.x > 0 && momentum.x < 0.001) momentum.x = 0;
+			if (momentum.x < 0 && momentum.x > -0.001) momentum.x = 0;
+			if (momentum.y > 0 && momentum.y < 0.001) momentum.y = 0;
+			if (momentum.y < 0 && momentum.y > -0.001) momentum.y = 0;
+			if (momentum.z > 0 && momentum.z < 0.001) momentum.z = 0;
+			if (momentum.z < 0 && momentum.z > -0.001) momentum.z = 0;
+			
+			if (momentum.rx > 0 && momentum.rx < 0.001) momentum.rx = 0;
+			if (momentum.ry > 0 && momentum.ry < 0.001) momentum.ry = 0;
+			if (momentum.rz > 0 && momentum.rz < 0.001) momentum.rz = 0;
+			if (momentum.rx < 0 && momentum.rx > -0.001) momentum.rx = 0;
+			if (momentum.ry < 0 && momentum.ry > -0.001) momentum.ry = 0;
+			if (momentum.rz < 0 && momentum.rz > -0.001) momentum.rz = 0;
+		}
+		
+		// grid opacity
+		var o = 1 / (camera.position.y / 100);
+		if (o>1) o = 1;
+		if (o<0) o = 0;
+		//grid.material.opacity = o;
+		
+		// fog
+		if (scene.fog) {
+			scene.fog.far = camera.position.y * 50;
+			var n = scene.fog.far / 100;
+			if (n<0) n = 0;
+			scene.fog.near = n;
+		}
+
+		//camera.lookAt( scene.position );
+		//LOD.update(camera);
+		
+		if (selectedPoint) camera.lookAt(selectedPoint);
+
+		renderer.render( scene, camera );
+		
+		if (controls) {
+			document.getElementById('mx').innerHTML = momentum.x;
+			document.getElementById('my').innerHTML = momentum.y;
+			document.getElementById('mz').innerHTML = momentum.z;
+			document.getElementById('mrx').innerHTML = momentum.rx;
+			document.getElementById('mry').innerHTML = momentum.ry;
+			document.getElementById('mrz').innerHTML = momentum.rz;
+		}
+		document.getElementById('x').innerHTML = camera.position.x;
+		document.getElementById('y').innerHTML = camera.position.y;
+		document.getElementById('z').innerHTML = camera.position.z;
+		document.getElementById('rx').innerHTML = camera.rotation.x;
+		document.getElementById('ry').innerHTML = camera.rotation.y;
+		document.getElementById('rz').innerHTML = camera.rotation.z;
+		
+		document.getElementById('compassNeedle').style.webkitTransform = 'rotate('+(-camera.rotation.y-Math.PI*0.5)+'rad)';
+	}
+
+	</script>
+
+</body>
+</html>

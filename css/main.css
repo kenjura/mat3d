@@ -1,0 +1,63 @@
+html, body { 
+	width: 100%; 
+	height: 100%; 
+	margin: 0; 
+	padding: 0; 
+	font-family: sans-serif;
+}
+#container {
+	position: fixed;
+}
+
+#stats {
+	position: fixed;
+	left: 0;
+	bottom: 0;
+}
+#compass {
+	position: fixed;
+	top: 60px;
+	right: 10px;
+	background: rgb(100,100,255);
+	width: 100px;
+	height: 100px;
+	border-radius: 100px;
+}
+#compassNeedle {
+	position: absolute;
+	width: 50px;
+	height: 2px;
+	top: 50px;
+	left: 50px;
+	background: white;
+	-webkit-transform-origin: 0;
+}
+#dashboard {
+	font-size: 10px;
+	position: fixed; 
+	left: 0;
+	top: 0;
+	background: white;
+	width: 100vw;
+	height: 50px;
+}
+#dashboard th {
+	background: rgb(75,75,175);
+	color: white;
+}
+#dashboard td {
+	width: 100px;
+	max-width: 100px;
+	overflow: hidden;
+}
+
+
+.leftPanel {
+	position: fixed;
+	top: 50px;
+	left: 0;
+	width: 200px;
+	height: calc(100vh - 50px);
+	background: #222;
+	color: white;
+}

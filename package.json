@@ -1,0 +1,22 @@
+{
+  "devDependencies": {
+    "http-server": "^14.1.0"
+  },
+  "name": "mat3d",
+  "description": "This is a proof-of-concept for a Virtual Tabletop using Three.js and vanilla JavaScript.",
+  "version": "0.1.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kenjura/mat3d.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kenjura/mat3d/issues"
+  },
+  "homepage": "https://github.com/kenjura/mat3d#readme"
+}
