@@ -3,6 +3,8 @@ var keyMode = 'fly'; // other modes: 'token'
 
 function setupControls() {
 
+	const rootElement = document.getElementById('container');
+
 	window.addEventListener('keydown',function(e) {
 		console.log('keydown '+e.keyCode, 'mode=',keyMode);;
 		switch(keyMode) {
@@ -52,7 +54,7 @@ function setupControls() {
 		}
 	});
 
-	window.addEventListener("mousewheel", MouseWheelHandler, false);
+	rootElement.addEventListener("mousewheel", MouseWheelHandler, true);
 	function MouseWheelHandler(e) {
 		e.preventDefault();
 
@@ -111,7 +113,7 @@ function setupControls() {
 		ry: 0,
 		rz: 0
 	}
-	window.addEventListener('mousedown',function(e) {
+	rootElement.addEventListener('mousedown',function(e) {
 		switch(e.button) {
 			//case 0: controls.leftMouse = true; return;
 			case 2:
@@ -125,8 +127,8 @@ function setupControls() {
 		// return;
 		if (e.button==0) {
 			var x, y;
-			x = ( e.clientX / window.innerWidth ) * 2 - 1;
-			y = - ( e.clientY / window.innerHeight ) * 2 + 1;
+			x = ( e.clientX / rootElement.offsetWidth ) * 2 - 1;
+			y = - ( e.clientY / rootElement.offsetHeight ) * 2 + 1;
 
 			var vector = new THREE.Vector3( x, y, 0.5 );
 			projector.unprojectVector( vector, camera );
@@ -146,14 +148,14 @@ function setupControls() {
 				selectedPoint = groundIntersects[0].point;
 			}
 		}
-	});
-	window.addEventListener('mouseup',function(e) {
+	}, true);
+	rootElement.addEventListener('mouseup',function(e) {
 		switch(e.button) {
 			case 0: controls.leftMouse = false; return;
 			case 2: controls.rightMouse = false; return;
 		}
-	});
-	window.addEventListener('mousemove',function(e) {
+	}, true);
+	rootElement.addEventListener('mousemove',function(e) {
 		controls.movementX += e.movementX * (camera.position.y/50);
 		controls.movementY += e.movementY *  (camera.position.y/50);
 
@@ -194,7 +196,7 @@ function setupControls() {
 			selectorCube.position = new THREE.Vector3( pos.x, 0, pos.z );
 			// console.log('ground at: ',gc);
 		}
-	});
+	}, true);
 
 }
 
