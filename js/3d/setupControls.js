@@ -2,7 +2,7 @@
 var keyMode = 'fly'; // other modes: 'token'
 
 function setupControls() {
-	
+
 	window.addEventListener('keydown',function(e) {
 		console.log('keydown '+e.keyCode, 'mode=',keyMode);;
 		switch(keyMode) {
@@ -51,18 +51,18 @@ function setupControls() {
 			case 37: controls.yawLeft = false; break;
 		}
 	});
-	
-	window.addEventListener("mousewheel", MouseWheelHandler, false);  
+
+	window.addEventListener("mousewheel", MouseWheelHandler, false);
 	function MouseWheelHandler(e) {
 		e.preventDefault();
-		
+
 		// cross-browser wheel delta
 		var e = window.event || e; // old IE support
 		//console.log(e);
 		//var delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
 		var delta = e.wheelDelta;
 		//console.log('delta='+delta);
-		
+
 		/*
 		var z = camera.position.z;
 		z -= (delta*0.5);
@@ -70,10 +70,10 @@ function setupControls() {
 		camera.position.z = z
 		console.log(camera.position.z);
 		*/
-		
+
 		if (delta>0) delta=1;
 		if (delta<0) delta=-1;
-				
+
 		var dy = camera.position.y * 0.1;
 		dy *= -delta;
 		camera.position.y += dy;
@@ -84,7 +84,7 @@ function setupControls() {
 		*/
 		if (selectedPoint) camera.lookAt(selectedPoint);
 	};
-	
+
 	controls = {
 		leftMouse: false,
 		rightMouse: false,
@@ -101,7 +101,7 @@ function setupControls() {
 		movementX: 0,
 		movementY: 0,
 		movementFactor: 10,
-		acceleration: 1 
+		acceleration: 1
 	}
 	momentum = {
 		x: 0,
@@ -114,7 +114,7 @@ function setupControls() {
 	window.addEventListener('mousedown',function(e) {
 		switch(e.button) {
 			//case 0: controls.leftMouse = true; return;
-			case 2: 
+			case 2:
 				controls.rightMouse = true;
 				controls.movementX = 0;
 				controls.movementY = 0;
@@ -127,16 +127,16 @@ function setupControls() {
 			var x, y;
 			x = ( e.clientX / window.innerWidth ) * 2 - 1;
 			y = - ( e.clientY / window.innerHeight ) * 2 + 1;
-			
+
 			var vector = new THREE.Vector3( x, y, 0.5 );
 			projector.unprojectVector( vector, camera );
-			
+
 			var ray = new THREE.Ray( camera.position, vector.subSelf( camera.position ).normalize() );
-			
+
 			var groundIntersects = ray.intersectObjects( [ground] );
 			var tokenIntersects = ray.intersectObjects( tokens );
 			info(tokenIntersects);
-			
+
 			if (tokenIntersects.length>0) {
 				camera.lookAt(tokenIntersects[0].point);
 				selectedToken = tokenIntersects[0].object;
@@ -161,15 +161,15 @@ function setupControls() {
 		var x, y;
 		x = ( e.clientX / window.innerWidth ) * 2 - 1;
 		y = - ( e.clientY / window.innerHeight ) * 2 + 1;
-		
+
 		var vector = new THREE.Vector3( x, y, 0.5 );
 		projector.unprojectVector( vector, camera );
-		
+
 		var ray = new THREE.Ray( camera.position, vector.subSelf( camera.position ).normalize() );
-		
+
 		var groundIntersects = ray.intersectObjects( [ground] );
 		var tokenIntersects = ray.intersectObjects( tokens );
-		
+
 		if (tokenIntersects.length>0) {
 			info('intersecting a token');
 			info(tokenIntersects[0]);
@@ -195,7 +195,7 @@ function setupControls() {
 			// console.log('ground at: ',gc);
 		}
 	});
-	
+
 }
 
 var selectedTokenOutline;

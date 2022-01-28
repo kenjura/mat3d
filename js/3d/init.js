@@ -1,3 +1,7 @@
+window.globals = {
+
+};
+
 function init() {
 
 	// container = document.createElement( 'div' );
@@ -82,7 +86,7 @@ function init() {
 	mesh.rotation.x = - Math.PI / 2;
 	mesh.receiveShadow = true;
 	scene.add( mesh );
-	
+
 	ground = mesh;
 
 	// poles
@@ -125,29 +129,29 @@ function init() {
 	mesh.receiveShadow = true;
 	mesh.castShadow = true;
 	scene.add( mesh );
-	
+
 	/*********** GRID *************/
 	//initGrid();
-	
+
 	   LOD = new THREE.LOD();
 	   //var grid;
-	    
+
 	   grid = createGrid(100,0.2);
 	  // LOD.addLevel(grid);
 	    /*
 	   grid = createGrid(200,0.5);
 	   LOD.addLevel(grid,1000);
-	    
+
 	   grid = createGrid(800,0.2);
 	   LOD.addLevel(grid,4000);
 	    */
 	   //scene.add(LOD );
 	  //  window.LOD = LOD;
-	 
+
 	 scene.add(grid);
-	  
-	
-	
+
+
+
 	//createCells();
 
 
@@ -166,16 +170,16 @@ function init() {
 	selectorCube.position.x = coords.x;
 	selectorCube.position.y = 1;
 	selectorCube.position.z = coords.z;
-	
-	
-	
+
+
+
 	/*********** TOKENS ***********/
 	for (var i = 0; i < tokens.length; i++) {
 		tokens[i] = renderToken(tokens[i]);
-		
+
 	}
 	function renderToken(args) {
-		var mat = new THREE.MeshPhongMaterial( { color: args.color, specular: 0x111111, shiness: 10 } );		
+		var mat = new THREE.MeshPhongMaterial( { color: args.color, specular: 0x111111, shiness: 10 } );
 		// var geo = new THREE.CubeGeometry( 100, 100, 100 );
 		tokenGeo = new THREE.CylinderGeometry( 50, 50, 10 );
 		var mesh = new THREE.Mesh( tokenGeo, mat );
@@ -188,10 +192,11 @@ function init() {
 		scene.add( mesh );
 		return mesh;
 	}
+	window.globals.renderToken = renderToken;
 
 
 	/*********** RENDER *************/
-	
+
 	projector = new THREE.Projector();
 	renderer = new THREE.WebGLRenderer( { alpha:true, antialias: true } );
 	renderer.setSize( window.innerWidth, window.innerHeight );
@@ -217,4 +222,3 @@ function init() {
 	//camera.lookAt( scene.position );
 
 }
-
