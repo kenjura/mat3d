@@ -65,6 +65,11 @@
 	</div>
 
 	<div class="leftPanel">
+		<select id="mode-selector">
+			<option value="freefly">Free Fly</option>
+			<option value="topdown">Top Down</option>
+		</select>
+
 		<ul>
 			<li>W - forward</li>
 			<li>A - left</li>
@@ -81,6 +86,20 @@
 		<p>Right click and drag to move camera.</p>
 	</div>
 
+	<script>
+		const globals = {
+			mode: 'freefly',
+		}
+
+		document.querySelector('#mode-selector').addEventListener('change', setMode);
+
+		function setMode(e) {
+			const val = e.currentTarget.value;
+
+			mode = 'topdown';
+		}
+
+	</script>
 
 
 </body>

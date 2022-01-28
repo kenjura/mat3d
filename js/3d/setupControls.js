@@ -52,7 +52,7 @@ function setupControls() {
 		}
 	});
 	
-	window.addEventListener("mousewheel", MouseWheelHandler, false);  
+	window.addEventListener("wheel", MouseWheelHandler, false);  
 	function MouseWheelHandler(e) {
 		e.preventDefault();
 		
@@ -60,8 +60,8 @@ function setupControls() {
 		var e = window.event || e; // old IE support
 		//console.log(e);
 		//var delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
-		var delta = e.wheelDelta;
-		//console.log('delta='+delta);
+		var delta = -e.deltaY;
+		console.log('delta='+delta);
 		
 		/*
 		var z = camera.position.z;
@@ -138,12 +138,13 @@ function setupControls() {
 			info(tokenIntersects);
 			
 			if (tokenIntersects.length>0) {
-				camera.lookAt(tokenIntersects[0].point);
+				// camera.lookAt(tokenIntersects[0].point); // in topdown mode, clicking a token doesn't cause the camera to look at it
 				selectedToken = tokenIntersects[0].object;
 				keyMode = 'token';
 			} else if (groundIntersects.length>0) {
-				camera.lookAt(groundIntersects[0].point);
-				selectedPoint = groundIntersects[0].point;
+				// in topdown mode, left click on a non-token does nothing
+				// camera.lookAt(groundIntersects[0].point);
+				// selectedPoint = groundIntersects[0].point;
 			}
 		}
 	});
@@ -154,8 +155,8 @@ function setupControls() {
 		}
 	});
 	window.addEventListener('mousemove',function(e) {
-		controls.movementX += e.movementX * (camera.position.y/50);
-		controls.movementY += e.movementY *  (camera.position.y/50);
+		controls.movementX -= e.movementX * (camera.position.y/500);
+		controls.movementY -= e.movementY *  (camera.position.y/500);
 
 		// find square/token under the cursor
 		var x, y;

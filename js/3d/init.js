@@ -19,8 +19,9 @@ function init() {
 
 	camera = new THREE.PerspectiveCamera( 30, window.innerWidth / window.innerHeight, 1, 100000 );
 	// camera = new THREE.OrthographicCamera(  width / - 2, width / 2, height / 2, height / - 2, 1000, 1 );
-	camera.position.y = 500;
-	camera.position.z = 2500;
+	camera.position.y = 2500;
+	// camera.position.z = 2500;
+	camera.rotation.x = Math.PI * 0.5 * -1;
 	scene.add( camera );
 
 	// lights

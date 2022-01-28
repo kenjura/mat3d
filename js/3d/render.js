@@ -35,11 +35,11 @@ function render() {
 		if (controls.forward) {
 			// rotation.y = 0 means facing north
 			//dz += -Math.cos(camera.rotation.y) * acceleration;
-			dz += -acceleration;
+			dy += -acceleration;
 		}
 		if (controls.backward) {
 			//dz += Math.cos(camera.rotation.y) * acceleration;
-			dz += acceleration;
+			dy += acceleration;
 		}
 		if (controls.left) {
 			//dx += Math.sin(camera.rotation.y) * acceleration;
@@ -50,10 +50,10 @@ function render() {
 			dx += acceleration;
 		}
 		if (controls.up) {
-			dy += acceleration;
+			dz += acceleration;
 		}
 		if (controls.down) {
-			dy -= acceleration;
+			dz -= acceleration;
 		}
 		if (controls.yawLeft) {
 			dry += rotateAcceleration; 
