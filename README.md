@@ -2,12 +2,13 @@ This is a proof-of-concept for a Virtual Tabletop using Three.js and vanilla Jav
 
 It's super, duper out of date.
 
-To run, simply host the root file system on a web server. Example:
-
+Quick start:
 ```
-npm i -d http-server
-node_modules/.bin/http-server .
+npm i
+npm start
 ```
 
-Then load index.html in the browser. In the above example, load http://localhost:8080/
+Then load http://localhost:8080/ in your browser
+
+To move, use WASD and arrow keys
 

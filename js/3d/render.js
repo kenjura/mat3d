@@ -16,8 +16,14 @@ function render() {
 	if (controls) {
 		if (controls.rightMouse) {
 			//console.log('foo');
-			camera.position.x += controls.movementX;
-			camera.position.z += controls.movementY;
+			console.log({controls});
+			console.log('x=',camera.position.x,' adding ',controls.movementX);
+			if (isNaN(controls.movementX) || isNaN(controls.movementY)) {
+				console.error(`cannot move camera. movementX=${controls.movementX} and movementY=${controls.movementY}, one of which isNaN `);
+			} else {
+				camera.position.x += controls.movementX;
+				camera.position.z += controls.movementY;
+			}
 			controls.movementX = 0;
 			controls.movementY = 0;
 		}

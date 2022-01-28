@@ -114,11 +114,15 @@ function setupControls() {
 	window.addEventListener('mousedown',function(e) {
 		switch(e.button) {
 			//case 0: controls.leftMouse = true; return;
-			case 2: controls.rightMouse = true; return;
+			case 2: 
+				controls.rightMouse = true;
+				controls.movementX = 0;
+				controls.movementY = 0;
+				return;
 		}
-		console.warn('left click disabled');
+		// console.warn('left click disabled');
 
-		return;
+		// return;
 		if (e.button==0) {
 			var x, y;
 			x = ( e.clientX / window.innerWidth ) * 2 - 1;
@@ -150,8 +154,8 @@ function setupControls() {
 		}
 	});
 	window.addEventListener('mousemove',function(e) {
-		controls.movementX += e.webkitMovementX * (camera.position.y/50);
-		controls.movementY += e.webkitMovementY *  (camera.position.y/50);
+		controls.movementX += e.movementX * (camera.position.y/50);
+		controls.movementY += e.movementY *  (camera.position.y/50);
 
 		// find square/token under the cursor
 		var x, y;
