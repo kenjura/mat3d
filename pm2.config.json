@@ -1,6 +1,8 @@
-"apps": [
-    {
-        "name": "mat3d",
-        "script": "src/index.js"
-    }
-];
+{
+    "apps": [
+        {
+            "name": "mat3d",
+            "script": "src/index.js"
+        }
+    ]
+}
