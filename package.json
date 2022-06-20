@@ -6,7 +6,7 @@
   "description": "This is a proof-of-concept for a Virtual Tabletop using Three.js and vanilla JavaScript.",
   "version": "0.1.0",
   "scripts": {
-    "start": "http-server .",
+    "start": "nodemon src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -18,5 +18,9 @@
   "bugs": {
     "url": "https://github.com/kenjura/mat3d/issues"
   },
-  "homepage": "https://github.com/kenjura/mat3d#readme"
+  "homepage": "https://github.com/kenjura/mat3d#readme",
+  "dependencies": {
+    "express": "^4.17.2",
+    "nodemon": "^2.0.15"
+  }
 }
