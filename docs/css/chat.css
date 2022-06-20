@@ -1,0 +1,8 @@
+#chat {
+    background-color: #333;
+    position: fixed;
+    top: 32px;
+    width: 250px;
+    right: 0;
+    height: calc(100vh - 32px);
+}

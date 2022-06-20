@@ -1,0 +1,107 @@
+
+/*********************** your tokens ************************/
+section#your-tokens {
+    /* border: 1px dashed rgb(0,0,0,0.5); */
+    height: calc(100vh - 24px - 64px - 32px - var(--actions-height));
+    left: 32px;
+    position: fixed;
+    top: 64px;
+    width: 192px;
+
+}
+
+.token {
+    background: rgba(0,0,0,0.25);
+    display: grid;
+    height: 64px;
+    grid-template-columns: 64px 128px;
+    grid-template-rows: 32px 32px 0;
+    margin-bottom: 16px;
+    box-shadow: 0 0 5px 2px rgba(0,0,0,0.35);
+}
+
+img.token-hero-image {
+    float: left;
+    height: 64px;
+    object-fit: cover;
+    overflow: hidden;
+    width: 64px;
+
+    grid-column-start: 1;
+    grid-column-end: 1;
+}
+.token-info {
+    grid-column-start: 2;
+    grid-column-end: 2;
+}
+.token-bar-green, .token-bar-blue {
+    color: white;
+    line-height: 24px;
+    display: grid;
+    grid-template-columns: 8px 1fr 1fr 8px;
+    font-size: 80%;
+    text-shadow: 1px 1px 3px black;
+}
+.token-bar-green {
+    background-image: linear-gradient( 180deg, hsl(130deg 100% 54%) 17%, hsl(156deg 100% 30%) 86% );
+    grid-column-start: 2;
+    grid-column-end: 2;
+    grid-row-start: 1;
+    grid-row-end: 1;
+}
+.token-bar-blue {
+    background-image: linear-gradient( 180deg, hsl(198deg 100% 54%) 17%, hsl(216deg 100% 40%) 86% );
+    grid-column-start: 2;
+    grid-column-end: 2;
+    grid-row-start: 2;
+    grid-row-end: 2;
+}
+.token-bar-blue .left, .token-bar-green .left {
+    grid-column-start: 2;
+    grid-column-end: 2;
+    line-height: 24px;
+    justify-self: start;
+    align-self: center;
+}
+.token-bar-blue .right, .token-bar-green .right {
+    grid-column-start: 3;
+    grid-column-end: 3;
+    text-align: right;
+    line-height: 24px;
+    justify-self: end;
+    align-self: center;
+}
+
+section#your-tokens .token-actions {
+    background-color: rgba(136, 30, 30, 0.1);
+    grid-column-start: 2;
+    grid-column-end: 2;
+    grid-row-start: 3;
+    grid-row-end: 3;
+    height: 16px;
+    overflow: hidden;
+    width: 100%;
+    white-space: nowrap;
+}
+section#your-tokens .token-actions a {
+    color: white;
+    line-height: 16px;
+    padding: 0 8px;
+    display: inline-block; 
+    transform: scale(0.75);
+    position: relative;
+}
+section#your-tokens .token-actions a:hover {
+    background-color: rgba(136,30,30,0.3);
+}
+section#your-tokens .token-actions .tooltip {
+    visibility: hidden;
+    opacity: 0;
+    transition: all 0.3s;
+    position: absolute;
+    top: 100%;
+    left: 0px;
+    background-color: white;
+    padding: 16px;
+    color: black;
+}

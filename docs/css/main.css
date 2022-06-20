@@ -1,0 +1,10 @@
+
+body {
+    background-color: dimgrey;
+    font-family: sans-serif;
+}
+
+:root {
+    --actions-height: 64px;
+}
+
